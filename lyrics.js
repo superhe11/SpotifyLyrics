@@ -19,9 +19,13 @@
         const match = nowPlaying.match(/^Now playing: (.+) by (.+)$/);
         if (match) {
             const parts = nowPlaying.split(/ by (?!.* by )/);
-            return parts.length === 2 ? { title: parts[0].replace(/^Now playing: /, ''), artist: parts[1] } : null;
+           if (parts.length === 2) {
+                const title = parts[0].replace(/^Now playing: /, '');
+                const artist = parts[1].split(',')[0].trim(); 
+                return { title, artist };
+            }
         }
-        return null;
+       return null;
     }
 
     function updateLyricsDisplay(lyrics) {
