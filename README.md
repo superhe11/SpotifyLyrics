@@ -1,6 +1,9 @@
 # SpotifyShowLyric
 Extension for Spicetify that shows lyrics of current song.
 
+![image](https://github.com/user-attachments/assets/19afd468-6ee4-4f25-96e3-ab5bc9843adc)
+
+
 ## Quick How-To-Guide
 1. Install Spicetify from [here](https://spicetify.app/docs/getting-started)
    
