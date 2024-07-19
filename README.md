@@ -6,7 +6,7 @@ Extension for Spicetify that shows lyrics of current song.
 
 ## Quick How-To-Guide
 ### 1) Setting up server
-1. Download server.js and put it in C:\Users\"Your User"
+1. Download server.js and put it in C:\Users\ "Your User"
 2. Download Node js (if you havn't already)
 ```
 winget install -e --id OpenJS.NodeJS
