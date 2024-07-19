@@ -1,10 +1,11 @@
 (function LyricsPlugin() {
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
     const lyricsApiUrl = 'https://api.lyrics.ovh/v1/';
+    const puppeteerServerUrl = 'http://localhost:3000/lyrics';
     const updateInterval = 1000;
     let currentSong = null;
 
-    function fetchLyrics(artist, title) {
+    function fetchLyricsFromLyricsOvh(artist, title) {
         const encodedUrl = encodeURIComponent(`${lyricsApiUrl}${artist}/${title}`);
         return fetch(`${proxyUrl}${encodedUrl}`)
             .then(response => response.json())
@@ -15,17 +16,26 @@
             });
     }
 
+    function fetchLyricsFromPuppeteer(artist, title) {
+        return fetch(`${puppeteerServerUrl}?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`)
+            .then(response => response.text())
+            .catch(error => {
+                console.error('Error fetching lyrics from server:', error);
+                return null;
+            });
+    }
+
     function extractArtistAndTitle(nowPlaying) {
         const match = nowPlaying.match(/^Now playing: (.+) by (.+)$/);
         if (match) {
             const parts = nowPlaying.split(/ by (?!.* by )/);
-           if (parts.length === 2) {
+            if (parts.length === 2) {
                 const title = parts[0].replace(/^Now playing: /, '');
-                const artist = parts[1].split(',')[0].trim(); 
+                const artist = parts[1].split(',')[0].trim();
                 return { title, artist };
             }
         }
-       return null;
+        return null;
     }
 
     function updateLyricsDisplay(lyrics) {
@@ -45,7 +55,7 @@
                 if (lines.length > 0 && lines[0].startsWith('Paroles de la chanson')) {
                     lines.shift();
                 }
-                lyrics = lines.join('\n');
+                lyrics = lines.join('\n'); 
             }
 
             lyricsContainer.textContent = lyrics;
@@ -76,8 +86,15 @@
             if (songInfo) {
                 if (!currentSong || currentSong.title !== songInfo.title || currentSong.artist !== songInfo.artist) {
                     currentSong = songInfo;
-                    fetchLyrics(songInfo.artist, songInfo.title).then(lyrics => {
-                        updateLyricsDisplay(lyrics);
+                    fetchLyricsFromLyricsOvh(songInfo.artist, songInfo.title).then(lyrics => {
+                        if (!lyrics) {
+                            updateLyricsDisplay('Lyrics not found, trying different method, it could take a while(up to 40 sec)...');
+                            fetchLyricsFromPuppeteer(songInfo.artist, songInfo.title).then(puppeteerLyrics => {
+                                updateLyricsDisplay(puppeteerLyrics || 'Lyrics not found :(');
+                            });
+                        } else {
+                            updateLyricsDisplay(lyrics);
+                        }
                     });
                 }
             } else {
@@ -89,5 +106,4 @@
     }
 
     setInterval(updateNowPlaying, updateInterval);
-
 })();
