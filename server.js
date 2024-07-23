@@ -14,31 +14,50 @@ app.get('/lyrics', async (req, res) => {
         return res.status(400).send('Artist and title are required');
     }
 
+    let browser;
     try {
-        const browser = await puppeteer.launch({ headless: true });
+        browser = await puppeteer.launch({
+            headless: false, 
+            args: [
+                '--window-size=800,600',
+                '--window-position=-10000,-10000'
+            ]
+        });
+
         const page = await browser.newPage();
 
-        const searchUrl = `https://genius.com/search?q=${encodeURIComponent(title)}%20${encodeURIComponent(artist)}`;
-        await page.goto(searchUrl, { waitUntil: 'networkidle2' });
+        const closeBrowserAfter = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Browser closed due to timeout')), 60000)
+        );
 
-        const firstSongSelector = 'search-result-section div[ng-if="$ctrl.section.hits.length > 0"] search-result-item a';
-        await page.waitForSelector(firstSongSelector);
-        const songPageUrl = await page.$eval(firstSongSelector, a => a.href);
+        const fetchLyrics = async () => {
+            const searchUrl = `https://genius.com/search?q=${encodeURIComponent(title)}%20${encodeURIComponent(artist)}`;
+            await page.goto(searchUrl, { waitUntil: 'networkidle2' });
 
-        await page.goto(songPageUrl, { waitUntil: 'networkidle2' });
+            const firstSongSelector = 'search-result-section div[ng-if="$ctrl.section.hits.length > 0"] search-result-item a';
+            await page.waitForSelector(firstSongSelector);
+            const songPageUrl = await page.$eval(firstSongSelector, a => a.href);
 
-        const lyricsSelector = 'div[data-lyrics-container="true"]';
-        await page.waitForSelector(lyricsSelector);
+            await page.goto(songPageUrl, { waitUntil: 'networkidle2' });
 
-        const lyricsElements = await page.$$eval(lyricsSelector, elements => elements.map(el => el.innerText));
-        const lyrics = lyricsElements.join('\n');
+            const lyricsSelector = 'div[data-lyrics-container="true"]';
+            await page.waitForSelector(lyricsSelector);
 
-        await browser.close();
+            const lyricsElements = await page.$$eval(lyricsSelector, elements => elements.map(el => el.innerText));
+            return lyricsElements.join('\n');
+        };
+
+        const lyrics = await Promise.race([fetchLyrics(), closeBrowserAfter]);
+
         console.log(lyrics);
         res.send(lyrics);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('Failed to fetch lyrics');
+    } finally {
+        if (browser) {
+            await browser.close();
+        }
     }
 });
 
