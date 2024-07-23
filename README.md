@@ -52,4 +52,4 @@ Server is running on port 3000, if you need to change that, adjust line 4 (lyric
 
 ## Important note
 I am using lyrics.ovh API, that has many, but not all songs. This method is very fast (<1sec)
-If lyrics was not found script do manual search on Genius website, this can take 20-40sec
+If lyrics was not found script do manual search on Genius website, this can take 10-20sec
