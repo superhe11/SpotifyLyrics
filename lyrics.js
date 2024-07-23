@@ -2,8 +2,12 @@
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
     const lyricsApiUrl = 'https://api.lyrics.ovh/v1/';
     const puppeteerServerUrl = 'http://localhost:3000/lyrics';
-    const updateInterval = 1000;
+    const updateInterval = 1000; 
+    const stableDuration = 2000; 
     let currentSong = null;
+    let lastUpdateTime = 0;
+    let stableSong = null;
+    let stableTimer = null;
 
     function fetchLyricsFromLyricsOvh(artist, title) {
         const encodedUrl = encodeURIComponent(`${lyricsApiUrl}${artist}/${title}`);
@@ -83,17 +87,28 @@
         if (nowPlayingElement) {
             const nowPlaying = nowPlayingElement.getAttribute('aria-label');
             const songInfo = extractArtistAndTitle(nowPlaying);
+            const currentTime = Date.now();
+
             if (songInfo) {
                 if (!currentSong || currentSong.title !== songInfo.title || currentSong.artist !== songInfo.artist) {
                     currentSong = songInfo;
+                    lastUpdateTime = currentTime;
                     fetchLyricsFromLyricsOvh(songInfo.artist, songInfo.title).then(lyrics => {
-                        if (!lyrics) {
-                            updateLyricsDisplay('Lyrics not found, trying different method, it could take a while(10-20sec)...');
-                            fetchLyricsFromPuppeteer(songInfo.artist, songInfo.title).then(puppeteerLyrics => {
-                                updateLyricsDisplay(puppeteerLyrics || 'Lyrics not found :(');
-                            });
-                        } else {
+                        if (lyrics) {
                             updateLyricsDisplay(lyrics);
+                        } else {
+                            updateLyricsDisplay('Lyrics not found, trying different method, it could take a while(up to 40 sec)...');
+
+                            if (stableTimer) {
+                                clearTimeout(stableTimer);
+                            }
+
+                            stableTimer = setTimeout(() => {
+                                stableSong = currentSong;
+                                fetchLyricsFromPuppeteer(stableSong.artist, stableSong.title).then(puppeteerLyrics => {
+                                    updateLyricsDisplay(puppeteerLyrics || 'Lyrics not found :(');
+                                });
+                            }, stableDuration);
                         }
                     });
                 }
