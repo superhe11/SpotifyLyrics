@@ -88,7 +88,7 @@
                     currentSong = songInfo;
                     fetchLyricsFromLyricsOvh(songInfo.artist, songInfo.title).then(lyrics => {
                         if (!lyrics) {
-                            updateLyricsDisplay('Lyrics not found, trying different method, it could take a while(up to 40 sec)...');
+                            updateLyricsDisplay('Lyrics not found, trying different method, it could take a while(10-20sec)...');
                             fetchLyricsFromPuppeteer(songInfo.artist, songInfo.title).then(puppeteerLyrics => {
                                 updateLyricsDisplay(puppeteerLyrics || 'Lyrics not found :(');
                             });
