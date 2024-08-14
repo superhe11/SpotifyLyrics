@@ -31,7 +31,7 @@ npm install express puppeteer cors
    
    ![image_2024-07-18_12-36-42](https://github.com/user-attachments/assets/e5714707-75d9-403b-8f91-98efc2e7d874)
 
-### 2) Setting up sctipt
+### 2) Setting up script
 1. Install Spicetify from [here](https://spicetify.app/docs/getting-started)
    
 2. Go to C:\Users\ "Your User" \AppData\Local\spicetify\Extensions
