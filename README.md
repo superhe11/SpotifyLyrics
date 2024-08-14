@@ -15,7 +15,7 @@ winget install -e --id OpenJS.NodeJS
 ```
 npm install express puppeteer cors
 ```
-4. Set up pm2. You can read about it [here](https://pm2.keymetrics.io/docs/usage/quick-start/)
+4. Now we will set up pm2. You can read about it [here](https://pm2.keymetrics.io/docs/usage/quick-start/)
 5. Execute all this commands: 
    ```
    npm install pm2 -g
