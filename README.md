@@ -47,7 +47,7 @@ spicetify config extensions lyrics.js
 spicetify apply
 ```
 
-#Very Important note
+# Very Important note
 Server is running on port 3000, if you need to change that, adjust line 4 (lyrics.js) and line 6 (server.js)
 
 ## Important note
