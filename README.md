@@ -2,7 +2,11 @@
 
 Lyrics panel for the Windows Spotify desktop app.
 
-This project does **not** require Spicetify. Instead, a local Node.js server injects `lyrics.js` directly into Spotify through Chrome DevTools Protocol and renders a right-side lyrics panel for the currently playing track.
+<img width="2168" height="1388" alt="{826C9F47-36D0-46A1-925F-6426CE7A45CD}" src="https://github.com/user-attachments/assets/fbcae457-cdbc-4ff5-9969-1ae13404a71e" />
+
+
+   
+This project does **not** require Spicetify. Instead, a local Node.js server injects code directly into Spotify through Chrome DevTools Protocol and renders a right-side lyrics panel for the currently playing track.
 
 ## What It Does
 
@@ -93,7 +97,7 @@ Then:
 2. Kill it from the tray if it is still running in background
 3. Start it again using that modified shortcut (you can bind it to the taskbar - it will be working now)
 
-### 5. Start the local server
+### 5. Start the local server (optional)
 
  Now we will set up pm2. You can read about it [here](https://pm2.keymetrics.io/docs/usage/quick-start/)
  Execute all this commands: 
@@ -108,8 +112,10 @@ Then:
    
    It should look like this:
 
+<img width="724" height="97" alt="{D3A85054-E047-48C8-9AFD-AC6F9C2D52C2}" src="https://github.com/user-attachments/assets/0ec1b110-f011-4277-8832-3d2979b90f74" />
 
 After that, Windows should restore your saved PM2 processes on startup.
+Now you can reopen your Spotify app and see how extension is working!
 
 ## How It Works
 
@@ -123,20 +129,6 @@ After that, Windows should restore your saved PM2 processes on startup.
    - `lyrics.ovh`
    - `Genius` scraping
 6. The result is rendered inside the right-side lyrics panel
-
-## Cache
-
-The project stores successful matches in:
-
-```text
-lyrics-cache.csv
-```
-
-Notes:
-
-- the file is created automatically
-- only successful results are cached
-- the file is ignored by git
 
 ## Ports
 
