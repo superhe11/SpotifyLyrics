@@ -1,22 +1,102 @@
 # SpotifyShowLyric
-Extension for Spicetify that shows lyrics of current song.
 
-![image](https://github.com/user-attachments/assets/19afd468-6ee4-4f25-96e3-ab5bc9843adc)
+Lyrics panel for the Windows Spotify desktop app.
 
+This project does **not** require Spicetify. Instead, a local Node.js server injects `lyrics.js` directly into Spotify through Chrome DevTools Protocol and renders a right-side lyrics panel for the currently playing track.
 
-## Quick How-To-Guide
-### 1) Setting up server
-1. Download server.js and put it in C:\Users\ "Your User"
-2. Download Node js (if you havn't already)
-```
+## What It Does
+
+- Injects a custom lyrics panel into the native Spotify desktop client
+- Detects the current song directly from Spotify UI / Media Session
+- Looks up lyrics through multiple sources
+- Caches successful matches in a local CSV file
+- Can run in the background with `pm2`
+
+## Current Lyrics Source Order
+
+1. `LRCLIB`
+2. `lyrics.ovh`
+3. `Genius` browser scraping through `puppeteer`
+
+If a song is found once, it is stored in `lyrics-cache.csv`, so the next request is instant.
+
+## Tech Stack
+
+- `express`
+- `cors`
+- `ws`
+- `puppeteer`
+- Spotify desktop app with remote debugging enabled
+
+## Project Files
+
+- `server.js` - local API, lyrics providers, cache and Spotify injector
+- `lyrics.js` - injected UI panel shown inside Spotify
+- `lyrics-cache.csv` - generated cache for successful lyrics matches
+
+## Requirements
+
+- Windows
+- Spotify desktop app
+- Node.js
+
+## Installation
+
+### 1. Clone or download the project
+
+Put the project anywhere you want, for example:
+
+### 2. Install Node.js
+
+If Node.js is not installed yet:
+
+```powershell
 winget install -e --id OpenJS.NodeJS
 ```
-3. Go for
+
+Restart the terminal after installation if needed.
+
+### 3. Install project dependencies
+
+Open a terminal in the project folder and run:
+
+```powershell
+npm install
 ```
-npm install express puppeteer cors
+
+This installs everything required by the current version of the project:
+
+- `express`
+- `cors`
+- `ws`
+- `puppeteer`
+
+### 4. Enable Spotify remote debugging
+
+Spotify must be started with a DevTools port so the server can inject script
+
+Find (or create) your Spotify shortcut and edit its **Target** field by appending:
+
+```text
+--remote-debugging-port=9222
 ```
-4. Now we will set up pm2. You can read about it [here](https://pm2.keymetrics.io/docs/usage/quick-start/)
-5. Execute all this commands: 
+
+Example:
+
+```text
+"C:\Users\<YourUser>\AppData\Roaming\Spotify\Spotify.exe" --remote-debugging-port=9222
+```
+
+Then:
+
+1. Fully close Spotify
+2. Kill it from the tray if it is still running in background
+3. Start it again using that modified shortcut (you can bind it to the taskbar - it will be working now)
+
+### 5. Start the local server
+
+ Now we will set up pm2. You can read about it [here](https://pm2.keymetrics.io/docs/usage/quick-start/)
+ Execute all this commands: 
    ```
    npm install pm2 -g
    npm install pm2-windows-startup -g
@@ -24,32 +104,60 @@ npm install express puppeteer cors
    pm2 start server.js --name lyrics-server
    pm2 save
    ```
-6. Run ```pm2 list```
+ Run ```pm2 list```
    
    It should look like this:
 
-   
-   ![image_2024-07-18_12-36-42](https://github.com/user-attachments/assets/e5714707-75d9-403b-8f91-98efc2e7d874)
 
-### 2) Setting up script
-1. Install Spicetify from [here](https://spicetify.app/docs/getting-started)
-   
-2. Go to C:\Users\ "Your User" \AppData\Local\spicetify\Extensions
-   
-3. Add lyrics.js file to **Extension** folder
-   
-4. Run in cmd
-```
-spicetify config extensions lyrics.js
-```
-5. Start spicetify with
-```
-spicetify apply
+After that, Windows should restore your saved PM2 processes on startup.
+
+## How It Works
+
+1. `server.js` monitors Spotify DevTools on port `9222`
+2. Once Spotify is available, the server injects `lyrics.js`
+3. `lyrics.js` reads the current track from Spotify
+4. The injected script requests lyrics from the local server
+5. The server checks:
+   - cache
+   - `LRCLIB`
+   - `lyrics.ovh`
+   - `Genius` scraping
+6. The result is rendered inside the right-side lyrics panel
+
+## Cache
+
+The project stores successful matches in:
+
+```text
+lyrics-cache.csv
 ```
 
-# Very Important note
-Server is running on port 3000, if you need to change that, adjust line 4 (lyrics.js) and line 6 (server.js)
+Notes:
 
-## Important note
-I am using lyrics.ovh API, that has many, but not all songs. This method is very fast (<1sec)
-If lyrics was not found script do manual search on Genius website, this can take 10-20sec
+- the file is created automatically
+- only successful results are cached
+- the file is ignored by git
+
+## Ports
+
+Current defaults:
+
+- local lyrics server: `3217`
+- Spotify remote debugging: `9222`
+
+If you change the local server port, update it in both:
+
+- `server.js`
+- `lyrics.js`
+
+### Genius fallback is slower
+
+That is expected.
+
+- `LRCLIB` and `lyrics.ovh` are fast API requests
+- `Genius` fallback uses browser automation through `puppeteer`
+- this can take noticeably longer than API hits
+
+## Disclaimer
+
+This project is a personal desktop customization tool for Spotify on Windows. It relies on Spotify UI structure and remote debugging behavior, so future Spotify updates may break some selectors or injection behavior.
